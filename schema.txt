@@ -1,0 +1,1 @@
+id:int,name:string,age:int,f1:int,f2:string,class:char

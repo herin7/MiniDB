@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>MiniDB Admin</title>
+  <link rel="stylesheet" href="/static/style.css">
+
+</head>
+<body>
+  <h1>MiniDB Admin Panel</h1>
+<div class="form-box">
+  <h3>Navigation</h3>
+  <button onclick="selectAll()">Select All</button>
+  <button onclick="insert()">Insert</button>
+  <button onclick="update()">Update</button>
+  <button onclick="deleteRow()">Delete</button>
+  <button onclick="exportCSV()">Export CSV</button>
+</div>
+
+  <div class="form-box">
+    <h3>Insert Row</h3>
+  <form id="insertForm"></form>
+    <button onclick="insert()">Insert</button>
+  </div>
+
+  <div class="form-box">
+    <h3>Update Row</h3>
+    <input type="text" id="updMatchCol" placeholder="Match Column (e.g. id)">
+    <input type="text" id="updMatchVal" placeholder="Match Value (e.g. 1)">
+    <input type="text" id="updName" placeholder="New Name">
+    <input type="number" id="updAge" placeholder="New Age">
+    <button onclick="update()">Update</button>
+  </div>
+
+  <div class="form-box">
+    <h3>Delete Row</h3>
+    <input type="text" id="delCol" placeholder="Column (e.g. id)">
+    <input type="text" id="delVal" placeholder="Value (e.g. 1)">
+    <button onclick="deleteRow()">Delete</button>
+  </div>
+
+ <div class="form-box" id="formBox">
+  <h3>Add New Row</h3>
+  <form id="insertForm"></form>
+  <button onclick="insert()">Insert</button>
+</div>
+
+
+  <pre id="output">Output will appear here...</pre>
+
+  <script>
+      document.addEventListener("DOMContentLoaded", function () {
+    fetch("/schema")
+      .then(res => res.json())
+      .then(schema => {
+        const form = document.getElementById("insertForm");
+        form.innerHTML = ""; // Clear any existing elements
+
+        schema.forEach(field => {
+          const label = document.createElement("label");
+          label.textContent = field.name;
+
+          const input = document.createElement("input");
+          input.type = (field.type === "int") ? "number" : "text";
+          input.id = "ins_" + field.name;
+          input.placeholder = field.name;
+
+          form.appendChild(label);
+          form.appendChild(document.createElement("br"));
+          form.appendChild(input);
+          form.appendChild(document.createElement("br"));
+        });
+      })
+      .catch(err => {
+        document.getElementById("output").textContent = "Schema load error: " + err;
+      });
+  });
+    function selectAll() {
+      fetch('/select_all').then(r => r.text()).then(d => output.innerHTML = d);
+    }
+
+  function insert() {
+    const inputs = document.querySelectorAll("#insertForm input");
+    const params = new URLSearchParams();
+    inputs.forEach(input => {
+      const key = input.id.replace("ins_", "");
+      params.append(key, input.value);
+    });
+
+    fetch('/insert?' + params.toString())
+      .then(r => r.text())
+      .then(d => document.getElementById("output").textContent = d);
+  }
+fetch("/schema")
+  .then(res => res.json())
+  .then(schema => {
+    const form = document.getElementById("insertForm");
+    schema.forEach(field => {
+      const label = document.createElement("label");
+      label.innerText = field.name;
+      const input = document.createElement("input");
+      input.type = field.type === "int" ? "number" : "text";
+      input.id = `ins_${field.name}`;
+      input.placeholder = field.name;
+      form.appendChild(label);
+      form.appendChild(document.createElement("br"));
+      form.appendChild(input);
+      form.appendChild(document.createElement("br"));
+    });
+  });
+
+
+    function update() {
+      const params = new URLSearchParams({
+        match_col: document.getElementById("updMatchCol").value,
+        match_val: document.getElementById("updMatchVal").value,
+        name: document.getElementById("updName").value,
+        age: document.getElementById("updAge").value
+      });
+      fetch('/update?' + params).then(r => r.text()).then(d => output.innerHTML = d);
+    }
+
+    function deleteRow() {
+      const params = new URLSearchParams({
+        col: document.getElementById("delCol").value,
+        val: document.getElementById("delVal").value
+      });
+      fetch('/delete?' + params).then(r => r.text()).then(d => output.innerHTML = d);
+    }
+
+function exportCSV() {
+  window.location.href = '/export';
+}
+
+  </script>
+</body>
+</html>
