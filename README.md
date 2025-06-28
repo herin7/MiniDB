@@ -149,5 +149,5 @@ Want to understand database internals or build something lightweight for embedde
 
 ## 📎 Demo
 
-> Coming soon — GIFs or screenshots of the web panel in action
+> Coming soon 
 
